@@ -109,15 +109,21 @@ class LinuxLANDeviceScanner(BaseLANDeviceScanner):
                   of the arp command, that contain a valid ip and mac address.
         """
         devices = {}
-        # Run "arp -n", to retrieve all mac addresses from the ARP-cache
-        process = subprocess.Popen(["arp", "-n"],
-                                   bufsize=100000,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        raw_arp_out, raw_arp_err = process.communicate()
-        arp_out = bytes.decode(raw_arp_out)
-        arp_err = bytes.decode(raw_arp_err)
+
+        try:
+            # Run "arp -n", to retrieve all mac addresses from the ARP-cache
+            process = subprocess.Popen(["arp", "-n"],
+                                       bufsize=100000,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+            raw_arp_out, raw_arp_err = process.communicate()
+            arp_out = bytes.decode(raw_arp_out)
+            arp_err = bytes.decode(raw_arp_err)
+        except FileNotFoundError:
+            raise FileNotFoundError("Command 'arp' not found. Please, make sure it is installed. "
+                                    "If not, the command can be installed with `sudo apt install "
+                                    "net-tools`.")
 
         if len(arp_err) > 0:
             # The arp-command failed
