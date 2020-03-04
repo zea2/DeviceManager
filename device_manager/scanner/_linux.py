@@ -120,10 +120,10 @@ class LinuxLANDeviceScanner(BaseLANDeviceScanner):
             raw_arp_out, raw_arp_err = process.communicate()
             arp_out = bytes.decode(raw_arp_out)
             arp_err = bytes.decode(raw_arp_err)
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             raise FileNotFoundError("Command 'arp' not found. Please, make sure it is installed. "
-                                    "If not, the command can be installed with `sudo apt install "
-                                    "net-tools`.")
+                                    "If not, try installing the command with `sudo apt install net-"
+                                    "tools`.") from exc
 
         if len(arp_err) > 0:
             # The arp-command failed
