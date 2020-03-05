@@ -6,7 +6,7 @@ This script tests the following entities:
 - enumeration class DeviceType
 - class USBDevice
 - class LANDevice
-- (indirectly: abstract class Device)
+- abstract class Device
 
 Authors:
     Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
@@ -56,11 +56,14 @@ class TestDeviceType(unittest.TestCase):
             self.try_make_device_type(device_type_enum, device_type)
             self.try_make_device_type(device_type_enum, device_type())
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Using an invalid type to create a DeviceType-"
+                                               "object should raise an exception"):
             device_type = DeviceType(123)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Using an invalid string to create a DeviceType-"
+                                               "object should raise an exception"):
             device_type = DeviceType("invalid")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError, msg="Using an unknown device-type to create a "
+                                               "DeviceType-object should raise an exception"):
             device_type = DeviceType(self.DummyDevice)
 
 
@@ -99,12 +102,28 @@ class TestDevice(unittest.TestCase):
         self.assertEqual(dummy_device.address, tmp_address,
                          msg="Device.address was not set to the expected value")
         tmp_address_aliases = ["addr0", "addr1", "addr2"]
-        dummy_device.address_aliases = tmp_address_aliases
+        dummy_device.address_aliases = [None, *tmp_address_aliases, None]
         self.assertEqual(dummy_device.address_aliases, tuple(tmp_address_aliases),
                          msg="Device.address_aliases was not set to the expected value")
         tmp_all_addresses = [tmp_address, *tmp_address_aliases]
         self.assertSequenceEqual(dummy_device.all_addresses, tuple(tmp_all_addresses),
                                  msg="Device.all_addresses does not contain the expected values")
+        dummy_device.address_aliases = None
+        self.assertSequenceEqual(dummy_device.address_aliases, tuple(),
+                                 msg="Setting Device.address_aliases to None should set it to an "
+                                     "empty tuple")
+        tmp_address_aliases = "addr0"
+        dummy_device.address_aliases = tmp_address_aliases
+        self.assertSequenceEqual(dummy_device.address_aliases, (tmp_address_aliases,),
+                                 msg="Setting Device.address_aliases to a string should "
+                                     "automatically wrap the string into a tuple")
+
+        with self.assertRaises(TypeError, msg="Using an invalid type to set as Device.address "
+                                              "should raise an exception"):
+            dummy_device.address = 123
+        with self.assertRaises(TypeError, msg="Using an invalid type to set as item of "
+                                              "Device.address_aliases should raise an exception"):
+            dummy_device.address_aliases = ["abc", 123]
 
 
 class TestUSBDevice(unittest.TestCase):
@@ -171,6 +190,19 @@ class TestUSBDevice(unittest.TestCase):
         self.assertDictEqual(device.unique_identifier, tmp_uid,
                              msg="USBDevice.unique_identifier does not contain the expected values")
 
+        with self.assertRaises(TypeError, msg="Setting USBDevice.vendor_id to an invalid type "
+                                              "should raise an exception"):
+            device.vendor_id = "abc"
+        with self.assertRaises(TypeError, msg="Setting USBDevice.product_id to an invalid type "
+                                              "should raise an exception"):
+            device.product_id = "abc"
+        with self.assertRaises(TypeError, msg="Setting USBDevice.revision_id to an invalid type "
+                                              "should raise an exception"):
+            device.revision_id = "abc"
+        with self.assertRaises(TypeError, msg="Setting USBDevice.serial to an invalid type should "
+                                              "raise an exception"):
+            device.serial = 123.456
+
     def test_comparison(self):
         device = USBDevice()
 
@@ -195,6 +227,10 @@ class TestUSBDevice(unittest.TestCase):
                                  "all_addresses before calling reset_addresses")
         self.assertEqual(device, self.test_device,
                          msg="USBDevices should be equal, if their unique identifiers are equal")
+
+        with self.assertRaises(TypeError, msg="The attribute of Device.from_device needs to have "
+                                              "the same type as self"):
+            device.from_device(LANDevice())
 
     def test_serialization(self):
         device = USBDevice()
@@ -222,7 +258,107 @@ class TestUSBDevice(unittest.TestCase):
 
 
 class TestLANDevice(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.test_device = LANDevice()
+
+        tmp_mac_address = "12:34:56:78:90:AB"
+        tmp_address = "192.168.1.2"
+        tmp_address_aliases = ["192.168.1.20", "123.45.67.89"]
+
+        self.test_device.mac_address = tmp_mac_address
+        self.test_device.address = tmp_address
+        self.test_device.address_aliases = tmp_address_aliases
+
+        self.expected_dict = dict(type="lan",
+                                  address=tmp_address,
+                                  address_aliases=tmp_address_aliases,
+                                  mac_address=tmp_mac_address)
+
+    def test_attributes(self):
+        device = LANDevice()
+
+        self.assertEqual(device.device_type, DeviceType.LAN,
+                         msg="Initially LANDevice.device_type must be DeviceType.USB")
+        tmp_uid = dict(mac_address=None)
+        self.assertDictEqual(device.unique_identifier, tmp_uid,
+                             msg="Initially LANDevice.unique_identifier must be {}".format(tmp_uid))
+        self.assertIsNone(device.mac_address,
+                          msg="Initially LANDevice.mac_address must be None")
+
+        tmp_mac_address = "11:22:33:44:55:66"
+        device.mac_address = tmp_mac_address
+        self.assertEqual(device.mac_address, tmp_mac_address,
+                         msg="LANDevice.mac_address was not set to the expected value")
+        device.mac_address = tmp_mac_address.replace(":", ".")
+        self.assertEqual(device.mac_address, tmp_mac_address,
+                         msg="LANDevice.mac_address was not set to the expected value")
+        device.mac_address = tmp_mac_address.replace(":", "-")
+        self.assertEqual(device.mac_address, tmp_mac_address,
+                         msg="LANDevice.mac_address was not set to the expected value")
+
+        tmp_uid = dict(mac_address=tmp_mac_address)
+        self.assertDictEqual(device.unique_identifier, tmp_uid,
+                             msg="LANDevice.unique_identifier does not contain the expected values")
+
+        with self.assertRaises(TypeError, msg="Setting LANDevice.mac_address to an invalid type "
+                                              "should raise an exception"):
+            device.mac_address = 1234
+        with self.assertRaises(TypeError, msg="Setting LANDevice.mac_address to an invalid "
+                                              "formatted string should raise an exception"):
+            device.mac_address = "1234567890AB"
+
+    def test_comparison(self):
+        device = LANDevice()
+
+        self.assertNotEqual(device, self.test_device, msg="LANDevices should be unequal")
+
+        device.from_device(self.test_device)
+        self.assertEqual(device, self.test_device,
+                         msg="LANDevices should be equal after calling from_device")
+
+        device.reset_addresses()
+        self.assertIsNone(device.address,
+                          msg="LANDevice.address must be None after calling reset_addresses")
+        self.assertSequenceEqual(device.address_aliases, tuple(),
+                                 msg="LANDevice.address_aliases must be empty after calling "
+                                     "reset_addresses")
+        self.assertSequenceEqual(device.all_addresses, tuple(),
+                                 msg="LANDevice.all_addresses must be empty after calling "
+                                     "reset_addresses")
+
+        self.assertListEqual(list(self.test_device.all_addresses), device._old_addresses,
+                             msg="LANDevice._old_address must contain the addresses that were in "
+                                 "all_addresses before calling reset_addresses")
+        self.assertEqual(device, self.test_device,
+                         msg="LANDevice should be equal, if their unique identifiers are equal")
+
+        with self.assertRaises(TypeError, msg="The attribute of Device.from_device needs to have "
+                                              "the same type as self"):
+            device.from_device(USBDevice())
+
+    def test_serialization(self):
+        device = LANDevice()
+
+        device_dict = self.test_device.to_dict()
+        self.assertDictEqual(device_dict, self.expected_dict,
+                             msg="Device.to_dict returned an invalid dictionary")
+
+        device.from_dict(device_dict)
+        self.assertEqual(device, self.test_device,
+                         msg="Devices must be equal after serialization and deserialization")
+        self.assertDictEqual(device.to_dict(), device_dict,
+                             msg="A deserialized Device should return the same serialized "
+                                 "dictionary")
+
+        device.from_dict(device_dict, old=True)
+        self.assertEqual(device, self.test_device,
+                         msg="Devices must be equal after serialization and deserialization")
+        self.assertNotEqual(device.to_dict(), device_dict,
+                            msg="A deserialized Device should return another serialized "
+                                "dictionary if it was deserialized with old addresses")
+        self.assertListEqual(device._old_addresses, list(self.test_device.all_addresses),
+                             msg="After deserializing a Device with old addresses, the addresses "
+                                 "should appear in _old_addresses")
 
 
 if __name__ == "__main__":
