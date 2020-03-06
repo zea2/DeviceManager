@@ -124,7 +124,7 @@ class BaseLANDeviceScanner(BaseDeviceScanner, abc.ABC):
             return self._devices
 
         devices = self._get_arp_cache()
-        if self.nmap.valid:
+        if self.nmap.valid:  # pragma: no cover
             for dev in self.nmap.devices:
                 if dev.mac_address in devices:
                     address_aliases = [ip_address for ip_address in dev.all_addresses

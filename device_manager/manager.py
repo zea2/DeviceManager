@@ -312,7 +312,7 @@ class DeviceManager(DeviceDict):
             # If still no device was found and the specified device type was LAN (or None, to search
             # all types), nmap is used to scan for the address. This might get more accurate results
             if device_type in [DeviceType.LAN, None] and \
-                    self._scanner[DeviceType.LAN].nmap is not None:
+                    self._scanner[DeviceType.LAN].nmap is not None:  # pragma: no cover
                 try:
                     self._scanner[DeviceType.LAN].nmap.scan(address)
                 except Exception:
@@ -357,7 +357,8 @@ class DeviceManager(DeviceDict):
         if len(devices) <= 0:
             # If still no device was found and the type of the specified device type was LAN, nmap
             # is used to scan for the address. This might get more accurate results
-            if search_device.device_type == DeviceType.LAN and scanner.nmap is not None:
+            if search_device.device_type == DeviceType.LAN \
+                    and scanner.nmap is not None:  # pragma: no cover
                 addresses = [*search_device.all_addresses, *search_device._old_addresses]
                 try:
                     scanner.nmap.scan(addresses)

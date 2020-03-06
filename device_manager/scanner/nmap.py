@@ -32,7 +32,7 @@ __all__ = ["NMAPWrapper"]
 ####################################################################################################
 
 
-class NMAPWrapper:
+class NMAPWrapper:  # pragma: no cover
     """Wrapper class for `nmap.PortScanner`. It class manages network scans via nmap and converts
     the results in `Device`s.
 
