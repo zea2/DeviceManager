@@ -57,10 +57,12 @@ class DeviceType(enum.Enum):
         elif isinstance(value, type) and issubclass(value, Device):
             try:
                 # The property should return a constant value, so `self` is not required
-                return value.device_type.fget(None)
+                device_type = value.device_type.fget(None)
             except AttributeError:
                 # If it is not working, create an instance, to get the corresponding DeviceType
-                return value().device_type
+                device_type = value().device_type
+            if device_type is not None and device_type.type is value:
+                return device_type
         return super()._missing_(value)
 
 
