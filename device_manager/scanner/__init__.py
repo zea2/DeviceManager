@@ -26,7 +26,7 @@ import sys
 import typing
 
 from ._base import BaseDeviceScanner
-from ..device import DeviceType, DeviceTypeDict, DeviceTypeType
+from ..device import DeviceType, Device, DeviceTypeDict, DeviceTypeType
 
 # Import specific device scanners depending on current platform
 if sys.platform == "win32":
@@ -51,15 +51,14 @@ class DeviceScanner(BaseDeviceScanner):
     the device type.
     """
 
-    def __init__(self,
-                 nmap_search_path: typing.Optional[typing.Union[str, typing.Iterable[str]]] = None):
+    def __init__(self, **kwargs):
         super().__init__()
         self._scanners = DeviceTypeDict()
-        self._scanners[DeviceType.USB] = USBDeviceScanner()
-        self._scanners[DeviceType.LAN] = LANDeviceScanner(nmap_search_path=nmap_search_path)
+        self._scanners[DeviceType.USB] = USBDeviceScanner(**kwargs)
+        self._scanners[DeviceType.LAN] = LANDeviceScanner(**kwargs)
 
-    def _scan(self, rescan: bool) -> None:
-        """Scans all connected devices (usb and ethernet).
+    def _scan(self, rescan: bool) -> typing.Sequence[Device]:
+        """Scans all connected devices of all supported types (usb and ethernet).
 
         Args:
             rescan: True, if the ports should be scanned again. False, if you only want to scan,
@@ -68,11 +67,11 @@ class DeviceScanner(BaseDeviceScanner):
         self._devices.clear()
         # Scanning for all supported device types.
         for scanner in self._scanners.values():
-            scanner._scan(rescan)
-            self._devices.extend(scanner._devices)
+            devices = scanner._scan(rescan)
+            self._devices.extend(devices)
+        return tuple(self._devices)
 
-    def __getitem__(self, device_type: typing.Optional[DeviceTypeType]) \
-            -> BaseDeviceScanner:
+    def __getitem__(self, device_type: typing.Optional[DeviceTypeType]) -> BaseDeviceScanner:
         """Returns the corresponding device scanner for the requested `DeviceType`.
 
         Args:
@@ -89,3 +88,13 @@ class DeviceScanner(BaseDeviceScanner):
         else:
             # The `DeviceTypeDict` will automatically resolve the key, if it is a string.
             return self._scanners[device_type]
+
+    def __iter__(self):
+        """Returns iter(self)"""
+        return self._scanners.__iter__()
+
+    def __contains__(self, key: typing.Optional[DeviceTypeType]) -> bool:
+        """Returns True, if self contains key. Otherwise, False."""
+        if key is None:
+            return True
+        return self._scanners.__contains__(key)

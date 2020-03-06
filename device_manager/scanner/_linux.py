@@ -6,6 +6,11 @@ Authors:
     Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
 """
 
+import sys
+if sys.platform == "win32":
+    raise ImportError("Linux-specific device scanners are only importable on windows systems.")
+
+import re
 import subprocess
 import typing
 
@@ -70,7 +75,7 @@ class LinuxUSBDeviceScanner(BaseDeviceScanner):
 
         return dev
 
-    def _scan(self, rescan: bool):
+    def _scan(self, rescan: bool) -> typing.Sequence[USBDevice]:
         """Scans all usb ports for devices.
 
         Args:
@@ -78,7 +83,8 @@ class LinuxUSBDeviceScanner(BaseDeviceScanner):
                     if there are no results from a previous scan.
         """
         if len(self._devices) > 0 and not rescan:
-            return
+            return self._devices
+
         self._devices.clear()
         raw_devices = self._context.list_devices()
         for raw_dev in raw_devices:
@@ -87,19 +93,22 @@ class LinuxUSBDeviceScanner(BaseDeviceScanner):
                 self._devices.append(dev)
             except (TypeError, ValueError):
                 pass
+        return tuple(self._devices)
 
 
 class LinuxLANDeviceScanner(BaseLANDeviceScanner):
     """A device scanner that scans the local network for ethernet devices.
 
     Args:
-        nmap_search_path: One or multiple paths where to search for the nmap executable.
-                          Or None (default) to use default search paths.
+        **kwargs:
+          - nmap_search_path: One or multiple paths where to search for the nmap executable.
     """
 
-    def __init__(self,
-                 nmap_search_path: typing.Optional[typing.Union[str, typing.Iterable[str]]] = None):
-        super().__init__(nmap_search_path=nmap_search_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Regular Expression: "  <ip address>  <hardware type>  <mac address>  ..."
+        self._arp_regex = re.compile(r"^[ \t]*((?:\d{1,3}\.){3}\d{1,3})[ \t]+(\w*[ \t]+)?"
+                                     r"([0-9A-Fa-f]{2}[.:\-]){5}([0-9A-Fa-f]{2})")
 
     def _get_arp_cache(self) -> typing.Dict[str, LANDevice]:
         """Runs the arp command and extracts ip and mac addresses from the command's output.
@@ -117,13 +126,17 @@ class LinuxLANDeviceScanner(BaseLANDeviceScanner):
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
-            raw_arp_out, raw_arp_err = process.communicate()
-            arp_out = bytes.decode(raw_arp_out)
-            arp_err = bytes.decode(raw_arp_err)
         except FileNotFoundError as exc:
-            raise FileNotFoundError("Command 'arp' not found. Please, make sure it is installed. "
-                                    "If not, try installing the command with `sudo apt install net-"
-                                    "tools`.") from exc
+            raise FileNotFoundError("Command 'arp' was not found. Please, make sure \"net-tools\" "
+                                    "is installed.") from exc
+
+        if process.returncode != 0:
+            # The arp-command failed
+            return devices
+
+        raw_arp_out, raw_arp_err = process.communicate()
+        arp_out = bytes.decode(raw_arp_out, errors="ignore")
+        arp_err = bytes.decode(raw_arp_err, errors="ignore")
 
         if len(arp_err) > 0:
             # The arp-command failed

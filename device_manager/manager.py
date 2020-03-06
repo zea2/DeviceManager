@@ -280,10 +280,9 @@ class DeviceManager(DeviceDict):
     Args:
         file: A handle to a json formatted file, to load the device manager data from.
     """
-    def __init__(self, file: typing.Optional[typing.IO] = None,
-                 nmap_search_path: typing.Optional[typing.Union[str, typing.Iterable[str]]] = None):
+    def __init__(self, file: typing.Optional[typing.IO] = None, **kwargs):
         super().__init__()
-        self._scanner = DeviceScanner(nmap_search_path=nmap_search_path)
+        self._scanner = DeviceScanner(**kwargs)
         self._scanner.list_devices()
         if file is not None:
             self.load(file)

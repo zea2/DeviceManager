@@ -6,6 +6,11 @@ Authors:
     Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
 """
 
+import sys
+if sys.platform != "win32":
+    raise ImportError("Windows-specific device scanners are only importable on windows systems.")
+
+import re
 import subprocess
 import typing
 
@@ -24,7 +29,7 @@ class Win32USBDeviceScanner(BaseDeviceScanner):
     devices.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self._wmi = win32com.client.Dispatch("WbemScripting.SWbemLocator")
         self._wbem = self._wmi.ConnectServer(".", "root\\cimv2")
@@ -80,7 +85,7 @@ class Win32USBDeviceScanner(BaseDeviceScanner):
 
         return dev
 
-    def _scan(self, rescan: bool):
+    def _scan(self, rescan: bool) -> typing.Sequence[USBDevice]:
         """Scans all PNP devices from the windows device manager and filters the USB devices.
 
         Args:
@@ -89,7 +94,8 @@ class Win32USBDeviceScanner(BaseDeviceScanner):
         """
         if len(self._devices) > 0 and not rescan:
             # Only scan if rescan is True or no devices were found, yet
-            return
+            return self._devices
+
         self._devices.clear()
         # Get all plug-and-play devices from the windows device manager
         raw_devices = self._wbem.ExecQuery("SELECT * FROM Win32_PnPEntity")
@@ -99,19 +105,22 @@ class Win32USBDeviceScanner(BaseDeviceScanner):
                 self._devices.append(dev)
             except (TypeError, AttributeError, ValueError):
                 pass
+        return tuple(self._devices)
 
 
 class Win32LANDeviceScanner(BaseLANDeviceScanner):
     """A device scanner that scans the local network for ethernet devices.
 
     Args:
-        nmap_search_path: One or multiple paths where to search for the nmap executable.
-                          Or None (default) to use default search paths.
+        **kwargs:
+          - nmap_search_path: One or multiple paths where to search for the nmap executable.
     """
 
-    def __init__(self,
-                 nmap_search_path: typing.Optional[typing.Union[str, typing.Iterable[str]]] = None):
-        super().__init__(nmap_search_path=nmap_search_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Regular Expression: "  <ip address>  <hardware type>  <mac address>  ..."
+        self._arp_regex = re.compile(r"^[ \t]*((?:\d{1,3}\.){3}\d{1,3})[ \t]+"
+                                     r"([0-9A-Fa-f]{2}[.:\-]){5}([0-9A-Fa-f]{2})")
 
     def _get_arp_cache(self) -> typing.Dict[str, LANDevice]:
         """Runs the arp command and extracts ip and mac addresses from the command's output.
@@ -121,19 +130,25 @@ class Win32LANDeviceScanner(BaseLANDeviceScanner):
                   of the arp command, that contain a valid ip and mac address.
         """
         devices = {}
-        # Run "arp -a", to retrieve all mac addresses from the ARP-cache
-        process = subprocess.Popen(["arp", "-a"],
-                                   bufsize=100000,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        raw_arp_out, raw_arp_err = process.communicate()
 
         try:
-            arp_out = bytes.decode(raw_arp_out)
-            arp_err = bytes.decode(raw_arp_err)
-        except UnicodeDecodeError:
+            # Run "arp -a", to retrieve all mac addresses from the ARP-cache
+            process = subprocess.Popen(["arp", "-a"],
+                                       bufsize=100000,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        except FileNotFoundError as exc:
+            raise FileNotFoundError("Command 'arp' was not found. Please, make sure it is "
+                                    "installed.") from exc
+
+        if process.returncode != 0:
+            # The arp-command failed
             return devices
+
+        raw_arp_out, raw_arp_err = process.communicate()
+        arp_out = bytes.decode(raw_arp_out, errors="ignore")
+        arp_err = bytes.decode(raw_arp_err, errors="ignore")
 
         if len(arp_err) > 0:
             # The arp-command failed

@@ -41,7 +41,7 @@ class DeviceType(enum.Enum):
         elif self.value == self.LAN.value:
             return LANDevice
         # Unknown device type
-        raise ValueError("Invalid DeviceType: {}".format(self.value))
+        raise ValueError("Invalid DeviceType: {}".format(self.value))  # pragma: no cover
 
     @classmethod
     def _missing_(cls, value: "DeviceTypeType") -> "DeviceType":
@@ -51,7 +51,7 @@ class DeviceType(enum.Enum):
                     return member
             for member in cls:
                 if member.name.lower() == value.lower():
-                    return member
+                    return member  # pragma: no cover
         elif isinstance(value, Device):
             return value.device_type
         elif isinstance(value, type) and issubclass(value, Device):
@@ -77,7 +77,7 @@ class Device(abc.ABC):
     @abc.abstractmethod
     def device_type(self) -> DeviceType:
         """Corresponding `DeviceType`-object"""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @property
     @abc.abstractmethod
@@ -85,7 +85,7 @@ class Device(abc.ABC):
         """Returns an unique identifier for this device. This makes device objects of the same or
         similar type comparable.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @property
     def address(self) -> typing.Optional[str]:
@@ -174,7 +174,7 @@ class Device(abc.ABC):
         """
         if other is self:
             # If the other object is the same as this, There is nothing to do
-            return
+            return  # pragma: no cover
         if not isinstance(other, type(self)):
             raise TypeError("other")
         self.reset_addresses()
@@ -191,7 +191,7 @@ class Device(abc.ABC):
         Returns:
             str: String-representation of this object.
         """
-        return "{}({})".format(type(self).__name__, repr(self.address))
+        return "{}({})".format(type(self).__name__, repr(self.address))  # pragma: no cover
 
     def __eq__(self, other: "Device") -> bool:
         """Compares this device object with another by comparing their `unique_identifier`s.
@@ -202,9 +202,9 @@ class Device(abc.ABC):
         Returns:
             bool: True, if the objects are equal, otherwise False.
         """
-        if not isinstance(other, Device):
+        if type(other) != type(self):
             return False
-        return self.unique_identifier == other.unique_identifier
+        return set(self.all_addresses) == set(other.all_addresses)
 
     def reset_addresses(self) -> None:
         """Moves `address` and `address_aliases` to `_old_addresses`."""
@@ -327,7 +327,7 @@ class USBDevice(Device):
         """
         if other is self:
             # If the other object is the same as this, There is nothing to do
-            return
+            return  # pragma: no cover
         super().from_device(other)
         if other.vendor_id is not None:
             self.vendor_id = other.vendor_id
@@ -337,6 +337,23 @@ class USBDevice(Device):
             self.revision_id = other.revision_id
         if other.serial is not None:
             self.serial = other.serial
+
+    def __eq__(self, other: "USBDevice") -> bool:
+        """Compares this device object with another by comparing their `unique_identifier`s.
+
+        Args:
+            other: Other device object to compare with this one.
+
+        Returns:
+            bool: True, if the objects are equal, otherwise False.
+        """
+        if not super().__eq__(other):
+            return False
+
+        return self.vendor_id == other.vendor_id and \
+               self.product_id == other.product_id and \
+               self.revision_id == other.revision_id and \
+               self.serial == other.serial
 
 
 class LANDevice(Device):
@@ -405,10 +422,24 @@ class LANDevice(Device):
         """
         if other is self:
             # If the other object is the same as this, There is nothing to do
-            return
+            return  # pragma: no cover
         super().from_device(other)
         if other.mac_address is not None:
             self.mac_address = other.mac_address
+
+    def __eq__(self, other: "LANDevice") -> bool:
+        """Compares this device object with another by comparing their `unique_identifier`s.
+
+        Args:
+            other: Other device object to compare with this one.
+
+        Returns:
+            bool: True, if the objects are equal, otherwise False.
+        """
+        if not super().__eq__(other):
+            return False
+
+        return self.mac_address == other.mac_address
 
     @staticmethod
     def format_mac(mac_address: typing.Optional[str]) -> typing.Optional[str]:
@@ -480,6 +511,14 @@ class DeviceTypeDict(dict):
                  `DeviceType`-object.
         """
         return super().__delitem__(self._get_key(key))
+
+    def __iter__(self):
+        """Returns iter(self)"""
+        return super().__iter__()
+
+    def __contains__(self, key: DeviceTypeType) -> bool:
+        """Returns key in self"""
+        return super().__contains__(self._get_key(key))
 
     @staticmethod
     def _get_key(key: DeviceTypeType) -> DeviceType:

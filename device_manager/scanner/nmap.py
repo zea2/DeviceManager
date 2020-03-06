@@ -40,27 +40,26 @@ class NMAPWrapper:
         notify_parent_done: An optional function object which is called after this scan is
                             performed. The function needs to accept one argument of type bool. This
                             argument will be True, if the scan succeeded and False, if not.
-        nmap_search_path: One or multiple paths where to search for the nmap executable.
-                          Or None (default) to use default search paths.
+        **kwargs:
+          - nmap_search_path: One or multiple paths where to search for the nmap executable.
     """
 
-    def __init__(self, notify_parent_done: typing.Optional[typing.Callable[[bool], None]] = None,
-                 nmap_search_path: typing.Optional[typing.Union[str, typing.Iterable[str]]] = None):
+    def __init__(self,
+                 notify_parent_done: typing.Optional[typing.Callable[[bool], typing.Any]] = None,
+                 **kwargs):
         super().__init__()
-
-        nmap_kwargs = {}
-        if nmap_search_path is not None:
-            # If an executable path is passed, use it as argument for nmap.PortScanner
-            if isinstance(nmap_search_path, str):
-                nmap_search_path = (nmap_search_path,)  # It needs to be an iterable
-            nmap_kwargs["nmap_search_path"] = nmap_search_path
-
         self._nmap = None
 
         if _NMAP_IMPORTED:
+            nmap_kwargs = {}
+            if "nmap_search_path" in kwargs:
+                nmap_kwargs["nmap_search_path"] = kwargs["nmap_search_path"]
+
             try:
                 self._nmap = nmap.PortScanner(**nmap_kwargs)
+                self._valid = True
             except nmap.PortScannerError:
+                self._valid = False
                 # An error is raised, if the nmap-executable was not found
                 warnings.warn("Could not create a nmap.PortScanner instance. Maybe nmap is not "
                               "installed on your machine or it is not specified in PATH. If nmap "
@@ -70,6 +69,11 @@ class NMAPWrapper:
         self._nmap_results = []
         self._nmap_thread = None
         self._notify_parent_done = notify_parent_done
+
+    @property
+    def valid(self) -> bool:
+        """Returns True, if the nmap.PortScanner could be instantiated"""
+        return self._valid
 
     @property
     def raw_devices(self) -> typing.Sequence[typing.Dict]:
@@ -222,6 +226,7 @@ class NMAPWrapper:
                           "environment. To use the nmap features, make sure both are installed.")
             return False
 
+        result = False
         if not isinstance(hosts, str):
             # nmap expects a single string as host-argument, multiple hosts are separated by spaces
             hosts = " ".join(hosts)
@@ -257,7 +262,7 @@ class NMAPWrapper:
         except (UnicodeDecodeError, nmap.PortScannerError):
             # Some error messages containing special characters cannot be decoded on windows. That
             # is why the UnicodeDecodeError is caught here
-            result = False
+            pass  # result = False
         finally:
             # Call the functions, because the scan is finished
             if self._notify_parent_done is not None:
