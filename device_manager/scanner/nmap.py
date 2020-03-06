@@ -57,9 +57,7 @@ class NMAPWrapper:
 
             try:
                 self._nmap = nmap.PortScanner(**nmap_kwargs)
-                self._valid = True
             except nmap.PortScannerError:
-                self._valid = False
                 # An error is raised, if the nmap-executable was not found
                 warnings.warn("Could not create a nmap.PortScanner instance. Maybe nmap is not "
                               "installed on your machine or it is not specified in PATH. If nmap "
@@ -73,7 +71,7 @@ class NMAPWrapper:
     @property
     def valid(self) -> bool:
         """Returns True, if the nmap.PortScanner could be instantiated"""
-        return self._valid
+        return self._nmap is not None
 
     @property
     def raw_devices(self) -> typing.Sequence[typing.Dict]:
