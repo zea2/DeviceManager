@@ -9,8 +9,8 @@ Authors:
 import abc
 import typing
 
-from ..device import Device, LANDevice
 from .nmap import NMAPWrapper
+from ..device import Device, LANDevice
 
 __all__ = ["BaseDeviceScanner", "BaseLANDeviceScanner"]
 
@@ -62,7 +62,7 @@ class BaseDeviceScanner(abc.ABC):
             rescan: True, if the protocol should be scanned again. False, if you only want to
                     scan, if there are no results from a previous scan.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     @staticmethod
     def _match_filters(device: Device, **filters) -> bool:
@@ -147,4 +147,4 @@ class BaseLANDeviceScanner(BaseDeviceScanner, abc.ABC):
             dict: A dictionary, mapping strings to `LANDevice`s. The dictionary contains all results
                   of the arp command, that contain a valid ip and mac address.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()

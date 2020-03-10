@@ -107,8 +107,6 @@ class TestWin32USBDeviceScanner(unittest.TestCase):
         tmp_dev.HardwareID.append(self.valid_devices[0].HardwareID[0])  # Not matching hardware id
         self.invalid_devices.append(tmp_dev)
 
-        self.invalid_devices.append(tmp_dev)
-
         self.all_devices = [*self.valid_devices, *self.invalid_devices]
 
         self.wmi_mock = unittest.mock.MagicMock(return_value=self.all_devices)

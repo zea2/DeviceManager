@@ -153,12 +153,12 @@ class DeviceDict:
                    automatically.
         """
         if not isinstance(key, str):
-            raise TypeError("name")
+            raise TypeError("name")  # pragma: no cover
         if isinstance(value, Device):
             # Extract device type from device
             device_type = value.device_type
         else:
-            raise TypeError("device")
+            raise TypeError("device")  # pragma: no cover
         if key not in self._dict:
             # If the key (name) is unknown, create a new dictionary
             self._dict[key] = DeviceTypeDict()
@@ -280,12 +280,10 @@ class DeviceManager(DeviceDict):
     Args:
         file: A handle to a json formatted file, to load the device manager data from.
     """
-    def __init__(self, file: typing.Optional[typing.IO] = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__()
         self._scanner = DeviceScanner(**kwargs)
         self._scanner.list_devices()
-        if file is not None:
-            self.load(file)
 
     @property
     def scanner(self) -> DeviceScanner:
@@ -320,7 +318,7 @@ class DeviceManager(DeviceDict):
                 # Read out the device cache again, to also get the nmap results
                 devices = self._scanner[DeviceType.LAN].find_devices(address=address)
         if len(devices) > 0:
-            if len(devices) > 1:
+            if len(devices) > 1:  # pragma: no cover
                 # This should not happen, but who knows
                 warnings.warn("Expected only one device for address \"{}\", not {}".format(
                     address, len(devices)))
@@ -358,7 +356,7 @@ class DeviceManager(DeviceDict):
             # If still no device was found and the type of the specified device type was LAN, nmap
             # is used to scan for the address. This might get more accurate results
             if search_device.device_type == DeviceType.LAN \
-                    and scanner.nmap is not None:  # pragma: no cover
+                    and scanner.nmap.valid:  # pragma: no cover
                 addresses = [*search_device.all_addresses, *search_device._old_addresses]
                 try:
                     scanner.nmap.scan(addresses)
@@ -367,7 +365,7 @@ class DeviceManager(DeviceDict):
                 # Read out the device cache again, to also get the nmap results. No rescan required.
                 devices = scanner.find_devices(**search_device.unique_identifier)
         if len(devices) > 0:
-            if len(devices) > 1:
+            if len(devices) > 1:  # pragma: no cover
                 # This should not happen, but who knows
                 warnings.warn("Expected only one device as search result, not {}".format(
                     len(devices)))
@@ -460,7 +458,7 @@ class DeviceManager(DeviceDict):
                     # If there are any addresses stored in `device` reset them because they are not
                     # up-to-date anymore.
                     dev.reset_addresses()
-        else:
+        else:  # pragma: no cover
             raise TypeError("Expected Device or dict, got {} instead".format(type(device)))
         return device
 

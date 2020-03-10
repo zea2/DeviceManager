@@ -42,7 +42,7 @@ before_script:
   - pip3 install pytest coverage coveralls
 
 script:
-  - coverage run --rcfile=coverage.ini -m pytest
+  - coverage run --rcfile=.coveragerc -m pytest
 
 after_success:
   - coveralls

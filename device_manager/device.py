@@ -79,7 +79,7 @@ class Device(abc.ABC):
     @abc.abstractmethod
     def device_type(self) -> DeviceType:
         """Corresponding `DeviceType`-object"""
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     @property
     @abc.abstractmethod
@@ -87,7 +87,7 @@ class Device(abc.ABC):
         """Returns an unique identifier for this device. This makes device objects of the same or
         similar type comparable.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     @property
     def address(self) -> typing.Optional[str]:
@@ -193,7 +193,7 @@ class Device(abc.ABC):
         Returns:
             str: String-representation of this object.
         """
-        return "{}({})".format(type(self).__name__, repr(self.address))  # pragma: no cover
+        return "{}({})".format(type(self).__name__, repr(self.address))
 
     def __eq__(self, other: "Device") -> bool:
         """Compares this device object with another by comparing their `unique_identifier`s.
@@ -535,5 +535,5 @@ class DeviceTypeDict(dict):
         """
         try:
             return DeviceType(key)
-        except ValueError as exc:
+        except (ValueError, TypeError) as exc:
             raise KeyError(key) from exc

@@ -57,7 +57,7 @@ class LinuxUSBDeviceScanner(BaseDeviceScanner):
 
         try:
             dev.address = raw_device.device_path
-        except AttributeError as exc:
+        except (AttributeError, TypeError) as exc:
             # When the raw device does not contain a path, it makes no sense
             raise TypeError("Could not get device path from pyudev.Device") from exc
 
