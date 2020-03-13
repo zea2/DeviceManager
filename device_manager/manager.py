@@ -309,6 +309,7 @@ class DeviceManager(DeviceDict):
         if len(devices) <= 0:
             # If still no device was found and the specified device type was LAN (or None, to search
             # all types), nmap is used to scan for the address. This might get more accurate results
+            # pylint: disable=no-member
             if device_type in [DeviceType.LAN, None] and \
                     self._scanner[DeviceType.LAN].nmap is not None:  # pragma: no cover
                 try:

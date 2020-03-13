@@ -67,7 +67,7 @@ class DeviceScanner(BaseDeviceScanner):
         self._devices.clear()
         # Scanning for all supported device types.
         for scanner in self._scanners.values():
-            devices = scanner._scan(rescan)
+            devices = scanner._scan(rescan)  # pylint: disable=protected-access
             self._devices.extend(devices)
         return tuple(self._devices)
 

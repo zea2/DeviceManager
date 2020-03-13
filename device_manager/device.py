@@ -205,6 +205,8 @@ class Device(abc.ABC):
             bool: True, if the objects are equal, otherwise False.
         """
         if type(other) != type(self):
+            # Compare types instead of using isinstance, because both objects must to be the same
+            # and so must their types
             return False
         return set(self.all_addresses) == set(other.all_addresses)
 
@@ -513,10 +515,6 @@ class DeviceTypeDict(dict):
                  `DeviceType`-object.
         """
         return super().__delitem__(self._get_key(key))
-
-    def __iter__(self):
-        """Returns iter(self)"""
-        return super().__iter__()
 
     def __contains__(self, key: DeviceTypeType) -> bool:
         """Returns key in self"""

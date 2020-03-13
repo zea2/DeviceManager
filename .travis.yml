@@ -16,21 +16,23 @@ jobs:
         - choco install python --version 3.6
         - python -m pip install --upgrade pip
         - pip install coverage==4.5.4  # coverage >= 5.0 is not working with Python 3.6 on Windows
-      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH PYLINT_IGNORE=_linux.py
     - name: "Python 3.7 on Windows"
       os: windows
       language: shell
       before_install:
         - choco install python --version 3.7
         - python -m pip install --upgrade pip
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH PYLINT_IGNORE=_linux.py
     - name: "Python 3.8 on Windows"
       os: windows
       language: shell
       before_install:
         - choco install python --version 3.8
         - python -m pip install --upgrade pip
-      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH PYLINT_IGNORE=_linux.py
+
+env: PYLINT_IGNORE=_win32.py
 
 before_install:
   - pip3 install --upgrade pip
@@ -39,10 +41,13 @@ install:
   - pip3 install .
 
 before_script:
-  - pip3 install pytest coverage coveralls
+  - pip3 install pytest
+  - pip3 install pylint
+  - pip3 install coverage coveralls
 
 script:
   - coverage run --rcfile=.coveragerc -m pytest
+  - pylint --rcfile=.pylintrc --errors-only --ignore=nmap.py,$PYLINT_IGNORE device_manager
 
 after_success:
   - coveralls
