@@ -8,6 +8,8 @@ Authors:
 
 import distutils.command.install as orig
 import inspect
+import os
+import re
 import subprocess
 import sys
 
@@ -24,6 +26,23 @@ REQ_PYNMAP  = "python-nmap>=0.6.1"
 def pip_install(package: str):
     """Installs a package manually with pip"""
     return subprocess.check_call(["pip", "install", package])
+
+
+def extract_version(version_file_name):
+    """Extracts the version from a python file.
+
+    The statement setting the __version__ variable must not be indented. Comments after that
+    statement are allowed.
+    """
+    regex = re.compile(r"^__version__\s*=\s*['\"]([^'\"]*)['\"]\s*(#.*)?$")
+    with open(version_file_name, "r") as version_file:
+        lines = version_file.read().splitlines()
+    for line in reversed(lines):
+        version_match = regex.match(line)
+        if version_match:
+            return version_match.group(1)
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 
 class CustomInstall(install):
@@ -52,7 +71,9 @@ class CustomDevelop(develop):
     def run(self):
         """Run the installation"""
         if not self.uninstall:
-            pip_install(REQ_PYWIN32)
+            if sys.platform == "win32":
+                # Install pywin32 manually with pip
+                pip_install(REQ_PYWIN32)
 
         return super().run()
 
@@ -64,11 +85,15 @@ def main():
 
     if sys.platform == "win32":
         install_requires = [REQ_PYWIN32]
-    else:
+    elif sys.platform == "linux":
         install_requires = [REQ_PYUDEV]
+    else:
+        raise OSError("The platform \"{}\" is not supported".format(sys.platform))
+
+    version = extract_version(os.path.join("device_manager", "__init__.py"))
 
     return setup(name="device_manager",
-                 version="0.1",
+                 version=version,
                  author="Forschungszentrum Jülich GmbH - ZEA-2",
                  description="A tool for searching and managing plug-and-play devices",
                  long_description=long_description,

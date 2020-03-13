@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""The device scanners are usefull to scan for connected devices of different types.
+"""The device scanners are useful to scan for connected devices of different types.
 
 There are special device scanners (like `USBDeviceScanner` and `LANDeviceScanner`). These are used
 to scan a specific protocol for connected devices. They are implemented for windows and linux to
@@ -10,16 +10,29 @@ the specific device scanners inside. So this class can be used to scan for diffe
 the type is unknown or if the user specifies a specific type, the scan is focused on this type.
 
 Examples:
-    s = DeviceScanner()  # Creates the general device scanner
-    ls = s.list_devices()  # Lists all connected devices that can be found directly
-    d1 = s.find_device(serial="1234567890AB")  # Returns a (usb) device with the requested serial no
-    d2 = s.find_device(mac_address="12:34:56:78:90:AB")  # A (lan) device matching the mac address
-    l = s["lan"].list_devices()  # Lists all knwon lan devices (maybe not all)
-    l = s["lan"].nmap.scan(...)  # Scans for ethernet devices which should find all devices matching
-                                 # the request. For more information see `NMAPWrapper`
+    Creating a general device scanner:
 
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
+    >>> s = DeviceScanner()
+
+    Listing all connected devices that can be found directly:
+
+    >>> devices = s.list_devices()
+
+    Finding devices by their identifiers
+
+    >>> usb_device = s.find_devices(serial="1234567890AB")
+    >>> lan_device = s.find_devices(mac_address="12:34:56:78:90:AB")
+
+    To only search for a specific device type, you can access the specific `DeviceScanner`s by using
+    the `__getitem__` operator. This speeds up the search for the device.
+
+    >>> usb_device = s["usb"].find_devices(serial="1234567890AB")
+    >>> lan_devices = s["lan"].list_devices()
+
+    For better results when searching for ethernet devices, nmap can be used to scan the network.
+    For more information take a look at the `NMAPWrapper`.
+
+    >>> s["lan"].nmap.scan(...)
 """
 
 import sys
@@ -33,10 +46,12 @@ if sys.platform == "win32":
     # Device scanners when working on windows
     from ._win32 import Win32USBDeviceScanner as USBDeviceScanner
     from ._win32 import Win32LANDeviceScanner as LANDeviceScanner
-else:
+elif sys.platform == "linux":
     # Device scanners when working on other platforms (especially linux) that are usually unix based
     from ._linux import LinuxUSBDeviceScanner as USBDeviceScanner
     from ._linux import LinuxLANDeviceScanner as LANDeviceScanner
+else:
+    raise OSError("The platform \"{}\" is not supported".format(sys.platform))
 
 __all__ = ["DeviceScanner", "USBDeviceScanner", "LANDeviceScanner"]
 

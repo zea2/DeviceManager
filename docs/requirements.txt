@@ -1,0 +1,5 @@
+sphinx>=2.4
+nbsphinx
+ipykernel
+sphinx_autodoc_typehints
+pandoc

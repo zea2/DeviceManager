@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Device scanners working on linux systems.
+"""Device scanners working on linux systems."""
 
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
-"""
-
+import os
 import sys
-if sys.platform == "win32":
-    raise ImportError("Linux-specific device scanners are only importable on windows systems.")
+if sys.platform != "linux":
+    if "DEVMAN_NO_IMPORT_ERROR" not in os.environ or \
+            str(os.environ["DEVMAN_NO_IMPORT_ERROR"]) not in ["True", "1"]:
+        raise ImportError("Linux-specific device scanners are only importable on linux systems")
 
 import re
 import subprocess

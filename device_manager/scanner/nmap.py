@@ -5,9 +5,6 @@
 It wraps the relevant scan functions of nmap's `PortScanner`. The scan results are stored locally to
 make them accessable later if needed. And this class also provides a way to scan asynchronously for
 network devices at a specific address or subnet.
-
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
 """
 
 import os

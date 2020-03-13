@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Device scanners working on windows systems.
+"""Device scanners working on windows systems."""
 
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
-"""
-
+import os
 import sys
 if sys.platform != "win32":
-    raise ImportError("Windows-specific device scanners are only importable on windows systems.")
+    if "DEVMAN_NO_IMPORT_ERROR" not in os.environ or \
+            str(os.environ["DEVMAN_NO_IMPORT_ERROR"]) not in ["True", "1"]:
+        raise ImportError("Windows-specific device scanners are only importable on windows systems")
 
 import re
 import subprocess

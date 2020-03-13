@@ -20,7 +20,7 @@ from device_manager.device import USBDevice, LANDevice
 from device_manager.scanner import USBDeviceScanner, LANDeviceScanner
 
 
-@unittest.skipIf(sys.platform == "win32", "Requires Linux")
+@unittest.skipUnless(sys.platform == "linux", "Requires Linux")
 class TestLinuxScannerImport(unittest.TestCase):
     def test_import(self):
         from device_manager.scanner._linux import LinuxUSBDeviceScanner, LinuxLANDeviceScanner
@@ -34,7 +34,7 @@ class TestLinuxScannerImport(unittest.TestCase):
             import device_manager.scanner._win32
 
 
-@unittest.skipIf(sys.platform == "win32", "Requires Linux")
+@unittest.skipUnless(sys.platform == "linux", "Requires Linux")
 class TestLinuxUSBDeviceScanner(unittest.TestCase):
     class MockPyudevDevice(unittest.mock.Mock):
         def __init__(self, path, subsystem, name,  vendor_id, product_id, revision_id, serial, cls):
@@ -165,7 +165,7 @@ class TestLinuxUSBDeviceScanner(unittest.TestCase):
                                      "other values than before")
 
 
-@unittest.skipIf(sys.platform == "win32", "Requires Linux")
+@unittest.skipUnless(sys.platform == "linux", "Requires Linux")
 class TestLinuxLANDeviceScanner(unittest.TestCase):
     class MockPopen:
         def communicate(self, input=None):

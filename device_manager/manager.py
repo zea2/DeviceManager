@@ -13,26 +13,30 @@ Additionally, the device manager can be serialized into a JSON-file and it can a
 this file. To make the file access easier, the function load_device_manager can be used.
 
 Examples:
-    dm = DeviceManager()  # Creates a device manager object
-    usb_device = dm.scanner["usb"].find_device(serial="1234567890AB")  # Finds an usb device by its
-                                                                       # serial number
-    dm["my-device"] = usb_device  # Adds the usb device
-    usb_device = dm["my-device", "usb"]  # To access the usb device
-    dm["my-device"] = "192.168.1.23"  # Adds a device with the given address. No device type was
-                                      # specified, so all supported device types are used to find it
-                                      # (this may take a bit longer without specifying the type)
-    lan_device = dm["my-device", "lan"]  # To access the currently added ethernet device
-    my_device = dm["my-device"]  # Without specifying the device type. All connections of the device
-                                 # are returned in a dictionary, with the device type as key:
-                                 # {DeviceType.USB: usb_device, DeviceType.LAN: lan_device}
-    with open("filename.json", "w") as f:
-        dm.save(f)  # Save the device manager to "filename.json"
-    with load_device_manager("filename.json") as dev_man:
-        usb_device = dev_man["my-device", "usb"]  # Gets the previously saved usb device. The old
-                                                  # addresses are updated, if something changed.
+    Creating a DeviceManager-object:
 
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
+    >>> dm = DeviceManager()
+
+    Finding a device by its identifier:
+
+    >>> usb_device = dm.scanner["usb"].find_devices(serial="1234567890AB")
+
+    Adding a new device and accessing it
+
+    >>> dm["my-device"] = usb_device
+    >>> assert dm["my-device"] is usb_device
+
+    Adding a device by its address, is also possible
+
+    >>> dm["my-device"] = "192.168.1.23"  # Searches all supported device types
+    >>> dm["my-device", "lan"] = "192.168.1.23"  # Only searches ethernet (lan) devices
+
+    Last, but not least, you can serialize the DeviceManager into a JSON file:
+
+    >>> with open("filename.json", "w") as f:
+    >>>     dm.save(f)  # Save the device manager to "filename.json"
+    >>> with load_device_manager("filename.json") as dev_man:
+    >>>     device = dev_man["my-device", "usb"]  # returns `usb_device`
 """
 
 import contextlib

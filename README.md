@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/zea2/DeviceManager.svg?branch=master)](https://travis-ci.com/zea2/DeviceManager)
 [![Coverage Status](https://coveralls.io/repos/github/zea2/DeviceManager/badge.svg?branch=master)](https://coveralls.io/github/zea2/DeviceManager?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/devicemanager/badge/?version=latest)](https://devicemanager.readthedocs.io/en/latest/?badge=latest)
 
 # DeviceManager
 
@@ -41,4 +42,4 @@ cd DeviceManager
 
 ## Examples
 
-Useful examples can be found at [doc/examples](doc/examples/).
+Useful examples can be found at [docs/source/examples](docs/source/examples).

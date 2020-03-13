@@ -8,9 +8,6 @@ a unique identification. Device's are simple data classes that store the relevan
 device. They are abstracted by their abstract base class `Device`. The device types are also
 encapsulated by the `DeviceType` enumeration. This enumeration makes it easier to find out the
 device's type and to specify requested types when using scanners or the device manager.
-
-Authors:
-    Lukas Lankes, Forschungszentrum Jülich GmbH - ZEA-2, l.lankes@fz-juelich.de
 """
 
 import abc
