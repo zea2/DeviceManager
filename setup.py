@@ -83,15 +83,6 @@ def main():
     with open("README.md", "r") as file:
         long_description = file.read()
 
-    if sys.platform == "win32":
-        install_requires = [REQ_PYWIN32]
-        op_system = "Operating System :: Microsoft :: Windows"
-    elif sys.platform == "linux":
-        install_requires = [REQ_PYUDEV]
-        op_system = "Operating System :: POSIX :: Linux"
-    else:
-        raise OSError("The platform \"{}\" is not supported".format(sys.platform))
-
     version = extract_version(os.path.join("device_manager", "__init__.py"))
 
     return setup(name="device-manager",
@@ -104,13 +95,15 @@ def main():
                  cmdclass={"install": CustomInstall,
                            "develop": CustomDevelop},
                  python_requires=">=3.6",
-                 install_requires=install_requires,
+                 install_requires=[REQ_PYUDEV + "; sys_platform == 'linux'",
+                                   REQ_PYWIN32 + "; sys_platform == 'win32'"],
                  extras_require={"nmap": [REQ_PYNMAP]},
                  classifiers=["Programming Language :: Python :: 3.6",
                               "Programming Language :: Python :: 3.7",
                               "Programming Language :: Python :: 3.8",
                               "License :: OSI Approved :: MIT License",
-                              op_system],
+                              "Operating System :: POSIX :: Linux",
+                              "Operating System :: Microsoft :: Windows"],
                  url="https://github.com/zea2/DeviceManager")
 
 
