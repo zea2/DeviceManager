@@ -13,7 +13,7 @@ import re
 import subprocess
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 
@@ -85,14 +85,17 @@ def main():
 
     if sys.platform == "win32":
         install_requires = [REQ_PYWIN32]
+        op_system = "Operating System :: Microsoft :: Windows"
     elif sys.platform == "linux":
         install_requires = [REQ_PYUDEV]
+        op_system = "Operating System :: POSIX :: Linux"
     else:
         raise OSError("The platform \"{}\" is not supported".format(sys.platform))
 
     version = extract_version(os.path.join("device_manager", "__init__.py"))
 
-    return setup(name="device_manager",
+    return setup(name="device-manager",
+                 packages=["device_manager", "device_manager.scanner"],
                  version=version,
                  author="Forschungszentrum Jülich GmbH - ZEA-2",
                  description="A tool for searching and managing plug-and-play devices",
@@ -100,13 +103,14 @@ def main():
                  long_description_content_type="text/markdown",
                  cmdclass={"install": CustomInstall,
                            "develop": CustomDevelop},
-                 packages=find_packages(),
                  python_requires=">=3.6",
                  install_requires=install_requires,
                  extras_require={"nmap": [REQ_PYNMAP]},
-                 classifiers=["Programming Language :: Python :: 3",
+                 classifiers=["Programming Language :: Python :: 3.6",
+                              "Programming Language :: Python :: 3.7",
+                              "Programming Language :: Python :: 3.8",
                               "License :: OSI Approved :: MIT License",
-                              "Operating System :: OS Independent"],
+                              op_system],
                  url="https://github.com/zea2/DeviceManager")
 
 

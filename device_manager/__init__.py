@@ -18,4 +18,4 @@ from .device import *  # base device, specific devices and device type enum
 from .manager import *  # device manager that can persistently store devices
 from .scanner import *  # base device scanner and specific device scanners
 
-__version__ = "0.1"
+__version__ = "0.2"

@@ -4,42 +4,63 @@
 
 # DeviceManager
 
-Python device manager for plug-and-play devices
+Python device manager for plug-and-play devices. The DeviceManager allows you to search for
+connected devices and you can store them into a dicitonary by a user-defined name. By this, you will
+never have to guess the device's address again. The DeviceManager will search for updated addresses
+automatically. So you will always know your device's address, even if it got a new address after it
+was disconnected and reconnected. For this purpose, the DeviceManager is also serializable into a
+JSON-file. So your devices are not only stored within the session but also beyond and you have the
+ability to share your device dictionaries with your colleagues.
+
+Currently supported device types are:
+
+- USB devices
+- Ethernet/LAN devices
+
 
 ## Installation
 
 To install the DeviceManager, perform the following steps:
 
 1. Clone this repository
+
 ```
 git clone https://github.com/zea2/DeviceManager
 ```
 
 2. Navigate to the cloned repository
+
 ```
 cd DeviceManager
 ```
 
 3. Install the project
-   1. Use pip for installation
-      ```
-      pip install .
-      ```
-   2. Or use the setup script:
-      ```
-      python setup.py install
-      ```
-   - If you also want to install the **nmap**-functionality, use the following command, to install the DeviceManager.
+   - To install the DeviceManager, you need to know if you want to use the *nmap*-functionality. If
+     not, install the package like this:
+     
      ```
-     pip install .[nmap]
+     $ pip3 install .
      ```
-     To use the nmap-functionality the nmap-software is additionally required.
-     - On Windows you need to download the software from https://nmap.org/download.html
-     - On Linux it can be installed with `sudo apt-get install nmap`
+
+   - If you want to use *nmap* to get better results when searching for network devices, use this:
+
+     ```
+     $ pip3 install .[nmap]
+     ```
+     
+     To use the *nmap*-functionality the *nmap*-software is required additionally:
+     
+     - On Windows you will need to download the software from https://nmap.org/download.html
+     - On Linux *nmap* can be installed with `sudo apt-get install nmap`
    
    
-   On linux you eventually need to use the commands `pip3` or `python3` instead of `pip` or `python`.
+   On linux you eventually need to use the commands `pip3` or `python3` instead of `pip` or
+   `python`.
 
-## Examples
+## Documentation
 
-Useful examples can be found at [docs/source/examples](docs/source/examples).
+You can find a documentation on how to setup and use the DeviceManager on
+[readthedocs](https://devicemanager.readthedocs.io/en/latest/). There you will also find some
+examples, the API documentation on more...
+
+Some useful example notebooks are located at [docs/source/examples](docs/source/examples).
