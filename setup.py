@@ -18,7 +18,7 @@ from setuptools.command.install import install
 from setuptools.command.develop import develop
 
 # Requirements
-REQ_PYWIN32 = "pywin32>=227"
+REQ_PYWIN32 = "pywin32>=223"
 REQ_PYUDEV  = "pyudev>=0.21.0"
 REQ_PYNMAP  = "python-nmap>=0.6.1"
 

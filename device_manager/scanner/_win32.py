@@ -141,11 +141,12 @@ class Win32LANDeviceScanner(BaseLANDeviceScanner):
             raise FileNotFoundError("Command 'arp' was not found. Please, make sure it is "
                                     "installed.") from exc
 
+        raw_arp_out, raw_arp_err = process.communicate()
+
         if process.returncode != 0:
             # The arp-command failed
             return devices
 
-        raw_arp_out, raw_arp_err = process.communicate()
         arp_out = bytes.decode(raw_arp_out, errors="ignore")
         arp_err = bytes.decode(raw_arp_err, errors="ignore")
 
