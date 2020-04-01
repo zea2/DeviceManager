@@ -52,7 +52,8 @@ class CustomInstall(install):
         """Run the installation"""
         # Explicit request for old-style install?  Just do it
         if self.old_and_unmanageable or self.single_version_externally_managed:
-            return orig.install.run(self)
+            orig.install.run(self)
+            return
 
         if sys.platform == "win32":
             # Install pywin32 manually with pip

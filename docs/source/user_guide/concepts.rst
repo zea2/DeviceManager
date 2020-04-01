@@ -83,10 +83,12 @@ USB devices are represented by the class ``USBDevice``. Beside the inherited pro
 ``Device`` it has the following ones:
 
 - | ``vendor_id``
-  | The manufacturer code provided by the USB committee
+  | The manufacturer code provided by the USB committee. If you want to know the manufacturer name,
+    use the property ``vendor_name``.
 
 - | ``product_id``
-  | The model code provided by the device's manufacturer
+  | The model code provided by the device's manufacturer. To get the model name, call the property
+    ``product_name``.
 
 - | ``revision_id``
   | The revision code

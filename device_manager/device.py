@@ -14,6 +14,7 @@ import abc
 import enum
 import re
 import typing
+from device_manager.utils.usb_vendor_database import USBVendorDatabase
 
 __all__ = ["DeviceType", "Device", "USBDevice", "LANDevice"]
 
@@ -225,6 +226,8 @@ class USBDevice(Device):
         self._product_id = None
         self._revision_id = None
         self._serial = None
+        self._vendor_name = None
+        self._product_name = None
 
     @property
     def device_type(self) -> DeviceType:
@@ -252,6 +255,13 @@ class USBDevice(Device):
         if not isinstance(vendor_id, (int, type(None))):
             raise TypeError("vendor_id")
         self._vendor_id = vendor_id
+        self._vendor_name, self._product_name = USBVendorDatabase.get_vendor_product_name(
+                                                    self.vendor_id, self.product_id)
+
+    @property
+    def vendor_name(self) -> str:
+        """Name of the device's manufacturer."""
+        return self._vendor_name
 
     @property
     def product_id(self) -> typing.Optional[int]:
@@ -263,6 +273,13 @@ class USBDevice(Device):
         if not isinstance(product_id, (int, type(None))):
             raise TypeError("product_id")
         self._product_id = product_id
+        self._vendor_name, self._product_name = USBVendorDatabase.get_vendor_product_name(
+                                                    self.vendor_id, self.product_id)
+
+    @property
+    def product_name(self) -> str:
+        """The model name of the device."""
+        return self._product_name
 
     @property
     def revision_id(self) -> typing.Optional[int]:
