@@ -86,8 +86,8 @@ def main():
 
     version = extract_version(os.path.join("device_manager", "__init__.py"))
 
-    return setup(name="device-manager",
-                 packages=["device_manager", "device_manager.scanner"],
+    return setup(name="device_manager",
+                 packages=["device_manager", "device_manager.scanner", "device_manager.utils"],
                  version=version,
                  author="Forschungszentrum Jülich GmbH - ZEA-2",
                  description="A tool for searching and managing plug-and-play devices",
