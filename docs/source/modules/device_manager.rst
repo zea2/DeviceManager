@@ -27,6 +27,14 @@ device\_manager.manager module
    :undoc-members:
    :show-inheritance:
 
+device\_manager.utils module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: device_manager.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

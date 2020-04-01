@@ -250,6 +250,38 @@ class TestUSBDevice(unittest.TestCase):
                              msg="After deserializing a Device with old addresses, the addresses "
                                  "should appear in _old_addresses")
 
+    def test_vendor_product_names(self):
+        device = USBDevice()
+
+        device.vendor_id = 0xf4ed  # Shenzhen Siglent Co., Ltd.
+        device.product_id = 0xee37  # SDG1010 Waveform Generator
+
+        self.assertEqual(device.vendor_name, "Shenzhen Siglent Co., Ltd.",
+                         msg="Invalid vendor name for id {}".format(device.vendor_id))
+        self.assertEqual(device.product_name, "SDG1010 Waveform Generator",
+                         msg="Invalid product name for id {}".format(device.product_id))
+
+        device.vendor_id = 0x040a  # Kodak Co.
+        device.product_id = 0x0120  # DC-240
+
+        self.assertEqual(device.vendor_name, "Kodak Co.",
+                         msg="Invalid vendor name for id {}".format(device.vendor_id))
+        self.assertEqual(device.product_name, "DC-240",
+                         msg="Invalid product name for id {}".format(device.product_id))
+
+        device.vendor_id = 0x06b9  # Alcatel Telecom
+        # product_id remains 0x0120  # SpeedTouch 120g 802.11g Wireless Adapter [Intersil ISL3886]
+
+        self.assertEqual(device.vendor_name, "Alcatel Telecom",
+                         msg="Invalid vendor name for id {}".format(device.vendor_id))
+        self.assertEqual(device.product_name,
+                         "SpeedTouch 120g 802.11g Wireless Adapter [Intersil ISL3886]",
+                         msg="Invalid product name for id {}".format(device.product_id))
+
+        from device_manager.utils.usb_vendor_database import USBVendorDatabase
+        self.assertIsNone(USBVendorDatabase(),
+                          msg="Creating an instance of USBVendorDatabase should not be allowed.")
+
 
 class TestLANDevice(unittest.TestCase):
     def setUp(self):
