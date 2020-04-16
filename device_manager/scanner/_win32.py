@@ -69,9 +69,12 @@ class Win32USBDeviceScanner(BaseDeviceScanner):
             # devices found.
             raise TypeError("Expected PNP class \"USB\", got \"{}\" instead.".format(device_type))
 
-        if instance_id is not None and "&" not in instance_id:
-            # If ampersands are contained in the instance id, it cannot be a serial number
-            dev.serial = instance_id
+        if instance_id is not None:
+            # If the second character of the instance id is an ampersand, the device does not have a
+            # serial number
+            instance_id = instance_id.split("&")[0]
+            if len(instance_id) > 1:
+                dev.serial = instance_id
 
         # Readout the device attributes
         for key, value in attributes.items():
