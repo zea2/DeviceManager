@@ -60,7 +60,9 @@ class TestWin32USBDeviceScanner(unittest.TestCase):
             self.device.vendor_id = vendor_id
             self.device.product_id = product_id
             self.device.revision_id = revision_id
-            if "&" not in instance_id:
+
+            instance_id = instance_id.split("&")[0]
+            if len(instance_id) > 1:
                 self.device.serial = instance_id
 
     class MockWMIConnectServer:
@@ -87,9 +89,13 @@ class TestWin32USBDeviceScanner(unittest.TestCase):
         self.invalid_devices.append(tmp_dev)
         tmp_dev = self.MockWin32Entity("Win32_PnPEntity", "USB", 0, 0, 0, "INVALID5")
         tmp_dev.DeviceID = "USB"  # Device id too short
+        tmp_dev.CompatibleID = []
+        tmp_dev.HardwareID = []
         self.invalid_devices.append(tmp_dev)
         tmp_dev = self.MockWin32Entity("Win32_PnPEntity", "USB", 0, 0, 0, "INVALID5")
         tmp_dev.DeviceID = "USB\\VID_0000&PID_0000_0000"  # Invalid device id format
+        tmp_dev.CompatibleID = []
+        tmp_dev.HardwareID = []
         self.invalid_devices.append(tmp_dev)
         tmp_dev = self.MockWin32Entity("Win32_PnPEntity", "USB", 0, 0, 0, "INVALID6")
         tmp_dev.CompatibleID = ["USBXYZ\\abcdef1234"]  # Invalid PNP class in device id
